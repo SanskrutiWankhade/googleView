@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Reviews</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74ebd5, #9face6);
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      padding: 20px 0;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #review-form {
+      max-width: 500px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    #review-form input, 
+    #review-form textarea, 
+    #review-form select, 
+    #review-form button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    #review-form button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    #review-form button:hover {
+      background: #45a049;
+    }
+
+    #reviews-section {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .review-box {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      width: 300px;
+      max-width: 100%;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .review-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0,0,0,0.3);
+    }
+
+    .review-author {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .review-rating {
+      color: #ff9800;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .review-text {
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .review-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .review-actions button {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+
+    .edit-btn {
+      background: #3498db;
+      color: white;
+    }
+
+    .edit-btn:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⭐ Google Reviews ⭐</h1>
+
+  <!-- ✅ Review Form -->
+  <form id="review-form">
+    <input type="hidden" id="editIndex"> <!-- Used for editing -->
+    <input type="text" id="author" placeholder="Your Name" required>
+    <select id="rating" required>
+      <option value="">Select Rating</option>
+      <option value="5">⭐ 5 - Excellent</option>
+      <option value="4">⭐ 4 - Good</option>
+      <option value="3">⭐ 3 - Average</option>
+      <option value="2">⭐ 2 - Poor</option>
+      <option value="1">⭐ 1 - Terrible</option>
+    </select>
+    <textarea id="text" rows="3" placeholder="Write your review..." required></textarea>
+    <button type="submit">Submit Review</button>
+  </form>
+
+  <div id="reviews-section"></div>
+
+  <script>
+    // Initial reviews
+    let reviews = [
+      { author: "girish", rating: 5, text: "Amazing food and quick service! Will come again." },
+      { author: "gaurav", rating: 4, text: "Nice ambiance, staff was friendly. Could improve seating." },
+      { author: "bhagvat", rating: 5, text: "Best restaurant in town! Totally worth it." }
+    ];
+
+    const reviewsSection = document.getElementById("reviews-section");
+    const form = document.getElementById("review-form");
+    const editIndexInput = document.getElementById("editIndex");
+
+    function getStars(rating) {
+      return "⭐".repeat(rating) + "☆".repeat(5 - rating);
+    }
+
+    // ✅ Render reviews
+    function renderReviews() {
+      reviewsSection.innerHTML = "";
+      reviews.forEach((r, index) => {
+        const box = document.createElement("div");
+        box.className = "review-box";
+        box.innerHTML = `
+          <p class="review-author">${r.author}</p>
+          <p class="review-rating">${getStars(r.rating)}</p>
+          <p class="review-text">${r.text}</p>
+          <div class="review-actions">
+            <button class="edit-btn" onclick="editReview(${index})">Edit</button>
+            <button class="delete-btn" onclick="deleteReview(${index})">Delete</button>
+          </div>
+        `;
+        reviewsSection.appendChild(box);
+      });
+    }
+
+    // ✅ Add / Update review
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const author = document.getElementById("author").value;
+      const rating = parseInt(document.getElementById("rating").value);
+      const text = document.getElementById("text").value;
+      const editIndex = editIndexInput.value;
+
+      if (editIndex === "") {
+        // Create
+        reviews.push({ author, rating, text });
+      } else {
+        // Update
+        reviews[editIndex] = { author, rating, text };
+        editIndexInput.value = "";
+      }
+
+      renderReviews();
+      form.reset();
+    });
+
+    // ✅ Delete review
+    function deleteReview(index) {
+      reviews.splice(index, 1);
+      renderReviews();
+    }
+
+    // ✅ Edit review (prefill form)
+    function editReview(index) {
+      const review = reviews[index];
+      document.getElementById("author").value = review.author;
+      document.getElementById("rating").value = review.rating;
+      document.getElementById("text").value = review.text;
+      editIndexInput.value = index; // mark as editing
+    }
+
+    renderReviews();
+  </script>
+
+</body>
+</html>
